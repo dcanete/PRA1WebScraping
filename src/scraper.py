@@ -1,4 +1,5 @@
 from bs4 import BeautifulSoup
+from datetime import datetime
 import requests
 import sys
 import time
@@ -12,19 +13,19 @@ logging.basicConfig(filename='scraper.log', encoding='utf-8', level=logging.DEBU
 ###########################
 base = "https://www.ferreteriasindustriales.es/"
 # Número máximo de páginas por categoría (para no saturar la página origen)
-max_pages = 10
+max_pages = 1
 # Número máximo de productos que se mira el detalle (para no saturar la página origen)
 max_products = 50000
 # Nombre del fichero de datos
-filename = "data.csv"
+filename = "../csv/data-" + datetime.now().strftime("%Y%m%d%H%M%S") + ".csv"
 # Categorías de productos (tienen páginas distintas)
-categorias = ["14-para-el-hogar", "22-jardin-y-piscinas", "16-ferreteria", "19-fontaneria", 
+categorias = ["56-soportes-de-cerrajeria", "174-burletes", 
+              "14-para-el-hogar", "22-jardin-y-piscinas", "16-ferreteria", "19-fontaneria", 
               "20-material-electrico", "25-maquinaria", "15-cerrajeria", "17-climatizacion", 
               "176-cantoneras"]
 # Segundos de retraso que se pone entre llamada y llamada a pagina de detalle (para no saturar la página origen)
-delay = 0.25
+delay = 0.5
 products_links = []
-
 
 
 ##################################################################
@@ -60,6 +61,7 @@ def getProduct(str):
     productData["Presentacion"] = ""
     productData["Referencia Proveedor"] = ""
     productData["Diametro"] = ""
+    productData["Capacidad"] = ""
     props = soup.find("dl", {"class": "data-sheet"}).contents
     tam=int((len(props)-1)/4)
     for i in range(0,tam):
@@ -113,7 +115,8 @@ products_links = list(dict.fromkeys(products_links))
 products_links = products_links[0:max_products] 
 
 # Inicializa la lista de productos
-item=["url","title","price","fabricante","sku","Articulo", "Marca Comercial", "Presentacion" , "Referencia Proveedor", "Diametro", "Categoria", "Subcategoria"]
+item=["url","title","price","fabricante","sku","Articulo", "Marca Comercial", "Presentacion" , 
+      "Referencia Proveedor", "Diametro", "Capacidad", "Categoria", "Subcategoria"]
 products = []
 products.append(item)
 
@@ -130,7 +133,7 @@ for url in products_links:
             productData ["fabricante"], productData ["sku"], productData ["Articulo"], 
             productData ["Marca Comercial"], productData ["Presentacion"] , 
             productData ["Referencia Proveedor"], productData ["Diametro"], 
-            productData ["Categoria"], productData ["Subcategoria"]]
+            productData ["Capacidad"], productData ["Categoria"], productData ["Subcategoria"]]
     products.append(item)
    
     # Para no saturar el servidor origen
