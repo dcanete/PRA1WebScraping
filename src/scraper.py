@@ -13,7 +13,7 @@ logging.basicConfig(filename='scraper.log', encoding='utf-8', level=logging.DEBU
 ###########################
 base = "https://www.ferreteriasindustriales.es/"
 # Número máximo de páginas por categoría (para no saturar la página origen)
-max_pages = 1
+max_pages = 10
 # Número máximo de productos que se mira el detalle (para no saturar la página origen)
 max_products = 50000
 # Nombre del fichero de datos
@@ -24,7 +24,7 @@ categorias = ["56-soportes-de-cerrajeria", "174-burletes",
               "20-material-electrico", "25-maquinaria", "15-cerrajeria", "17-climatizacion", 
               "176-cantoneras"]
 # Segundos de retraso que se pone entre llamada y llamada a pagina de detalle (para no saturar la página origen)
-delay = 0.5
+delay = 1
 products_links = []
 
 
@@ -48,6 +48,7 @@ def getProduct(str):
         productData['fabricante'] = soup.find("div", {"class": "product-reference"}).find ("a").get_text()
     except Exception:
         productData['fabricante'] = ""
+        logging.debug ("---- Sin fabricante")
     
     productData['sku'] = soup.find("span", {"itemprop": "sku"}).get_text() 
 
@@ -62,14 +63,26 @@ def getProduct(str):
     productData["Referencia Proveedor"] = ""
     productData["Diametro"] = ""
     productData["Capacidad"] = ""
-    props = soup.find("dl", {"class": "data-sheet"}).contents
-    tam=int((len(props)-1)/4)
-    for i in range(0,tam):
-        productData[props[i*4+1].string] = props[i*4+3].string
-    
-    
+    # Hay algunos casos donde no viene ficha técnica
+    try: 
+        props = soup.find("dl", {"class": "data-sheet"}).contents
+        tam=int((len(props)-1)/4)
+        for i in range(0,tam):
+            productData[props[i*4+1].string] = props[i*4+3].string
+    except Exception:
+        logging.debug ("---- Sin ficha técnica")
+        
     # Devuelve el diccionario relleno
     return productData
+
+def save (products):
+    logging.info('-----Almacenamiento-----')
+    with open(filename, 'w', newline='') as csvFile:
+        writer = csv.writer(csvFile)
+        for product in products:
+            writer.writerow(product)
+    products = []
+    return products
 
 
 ###########################################
@@ -135,6 +148,9 @@ for url in products_links:
             productData ["Referencia Proveedor"], productData ["Diametro"], 
             productData ["Capacidad"], productData ["Categoria"], productData ["Subcategoria"]]
     products.append(item)
+    if (i%25==0):
+        save (products)
+    
    
     # Para no saturar el servidor origen
     time.sleep (delay) 
