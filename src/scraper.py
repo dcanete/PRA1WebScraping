@@ -13,9 +13,9 @@ logging.basicConfig(filename='scraper.log', encoding='utf-8', level=logging.DEBU
 ###########################
 base = "https://www.ferreteriasindustriales.es/"
 # Número máximo de páginas por categoría (para no saturar la página origen)
-max_pages = 10
+max_pages = 15
 # Número máximo de productos que se mira el detalle (para no saturar la página origen)
-max_products = 50000
+max_products = 10000
 # Nombre del fichero de datos
 filename = "../csv/data-" + datetime.now().strftime("%Y%m%d%H%M%S") + ".csv"
 # Categorías de productos (tienen páginas distintas)
@@ -32,12 +32,36 @@ products_links = []
 # Método que almacena en un diccionario los datos de un producto
 ##################################################################
 def getProduct(str):
-    page = requests.get(str)
-    soup = BeautifulSoup(page.content, features="lxml")
+    
+    #inicializamos 
     productData={}
     
     productData['url'] = str
-    productData['title'] = soup.title.string
+    productData['title'] = ""
+    productData['price'] = "" 
+    productData['fabricante'] = ""
+    productData['sku'] = ""
+    productData['Articulo'] = ""
+    productData['Marca Comercial'] = ""
+    productData['Presentacion'] = ""
+    productData['Referencia Proveedor'] = ""
+    productData['Diametro'] = ""
+    productData['Capacidad'] = ""
+    productData['Categoria'] = "" 
+    productData['Subcategoria'] = ""
+    
+    try: 
+        page = requests.get(str)
+        soup = BeautifulSoup(page.content, features="lxml")
+
+    except Exception:
+        logging.error ("---- Error al obtener el detalle del producto")
+        return productData
+    
+    
+    # Título
+    # productData['title'] = soup.title.string
+    productData['title'] = soup.find("h1", {"itemprop": "name"}).get_text()
         
     # Precio
     productData['price'] = soup.find("span", {"itemprop": "price"}).get_text()
@@ -47,7 +71,6 @@ def getProduct(str):
     try: 
         productData['fabricante'] = soup.find("div", {"class": "product-reference"}).find ("a").get_text()
     except Exception:
-        productData['fabricante'] = ""
         logging.debug ("---- Sin fabricante")
     
     productData['sku'] = soup.find("span", {"itemprop": "sku"}).get_text() 
@@ -57,12 +80,6 @@ def getProduct(str):
     productData["Subcategoria"] = soup.find_all("li", {"itemprop": "itemListElement"})[2].find("span").get_text()
 
     # Ficha técnica. Hay que recorrer el HTML para encontrar todas las propiedades de la ficha técnica
-    productData["Articulo"] = ""
-    productData["Marca Comercial"] = ""
-    productData["Presentacion"] = ""
-    productData["Referencia Proveedor"] = ""
-    productData["Diametro"] = ""
-    productData["Capacidad"] = ""
     # Hay algunos casos donde no viene ficha técnica
     try: 
         props = soup.find("dl", {"class": "data-sheet"}).contents
@@ -80,7 +97,11 @@ def save (products):
     with open(filename, 'w', newline='') as csvFile:
         writer = csv.writer(csvFile)
         for product in products:
-            writer.writerow(product)
+            try: 
+                writer.writerow(product)
+            except Exception:
+                logging.error ("---- Problema al guardar: " & str(products))
+
     products = []
     return products
 
@@ -148,6 +169,7 @@ for url in products_links:
             productData ["Referencia Proveedor"], productData ["Diametro"], 
             productData ["Capacidad"], productData ["Categoria"], productData ["Subcategoria"]]
     products.append(item)
+
     if (i%25==0):
         save (products)
     

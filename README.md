@@ -15,6 +15,10 @@ La actividad ha sido realizada en equipo por los siguientes alumnos:
 
 * **src/scraper.py**: contiene la implementación del proceso de scraping.
 
+## Ejecución
+
+python.exe scraper.py
+
 ## Recursos
 
 1. Materiales de la asignatura
