@@ -17,7 +17,7 @@ max_pages = 15
 # Número máximo de productos que se mira el detalle (para no saturar la página origen)
 max_products = 10000
 # Nombre del fichero de datos
-filename = "../csv/data-" + datetime.now().strftime("%Y%m%d%H%M%S") + ".csv"
+filename = "../dataset/data-" + datetime.now().strftime("%Y%m%d%H%M%S") + ".csv"
 # Categorías de productos (tienen páginas distintas)
 categorias = ["56-soportes-de-cerrajeria", "174-burletes", 
               "14-para-el-hogar", "22-jardin-y-piscinas", "16-ferreteria", "19-fontaneria", 
@@ -92,6 +92,9 @@ def getProduct(str):
     # Devuelve el diccionario relleno
     return productData
 
+##################################################################
+# Método que almacena en fichero los productos que se han capturado
+##################################################################
 def save (products):
     logging.info('-----Almacenamiento-----')
     with open(filename, 'w', newline='') as csvFile:
