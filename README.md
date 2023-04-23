@@ -19,6 +19,10 @@ La actividad ha sido realizada en equipo por los siguientes alumnos:
 
 python.exe scraper.py
 
+## Dataset
+
+El dataset generado se encuentra disponible y documentado en https://doi.org/10.5281/zenodo.7845032
+
 ## Recursos
 
 1. Materiales de la asignatura
